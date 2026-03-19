@@ -1,0 +1,1424 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="ATS-compatible resume builder with full accessibility support">
+  <title>ATS Resume Builder · Accessible & Bilingual</title>
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&family=Fira+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- PDF Export Library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" integrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  
+  <style>
+    :root {
+      --primary-color: #2c3e50;
+      --accent-color: #3498db;
+      --success-color: #27ae60;
+      --danger-color: #e74c3c;
+      --bg-light: #ecf0f1;
+      --bg-white: #ffffff;
+      --text-dark: #2c3e50;
+      --text-muted: #7f8c8d;
+      --border-color: #bdc3c7;
+      --focus-color: #3498db;
+      --transition: 0.15s ease;
+    }
+
+    /* RTL/LTR Support */
+    html[dir="rtl"] {
+      direction: rtl;
+      text-align: right;
+    }
+
+    html[dir="rtl"] * {
+      direction: rtl;
+    }
+
+    html[dir="ltr"] {
+      direction: ltr;
+      text-align: left;
+    }
+
+    html[dir="ltr"] * {
+      direction: ltr;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: 'Fira Sans', 'Cairo', sans-serif;
+      background: linear-gradient(135deg, #ecf0f1 0%, #e8eef7 100%);
+      color: var(--text-dark);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    /* Skip to Main Content Link */
+    .skip-link {
+      position: absolute;
+      top: -40px;
+      left: 0;
+      background: var(--accent-color);
+      color: white;
+      padding: 0.8rem 1.5rem;
+      text-decoration: none;
+      z-index: 100;
+      border-radius: 0 0 8px 0;
+      font-weight: 600;
+    }
+
+    html[dir="rtl"] .skip-link {
+      left: auto;
+      right: 0;
+      border-radius: 0 0 0 8px;
+    }
+
+    .skip-link:focus {
+      top: 0;
+      outline: 3px solid var(--focus-color);
+    }
+
+    .app-container {
+      max-width: 1800px;
+      margin: 0 auto;
+      padding: 1.5rem;
+    }
+
+    /* Header */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    html[dir="rtl"] .header {
+      flex-direction: row-reverse;
+    }
+
+    .header h1 {
+      font-size: 1.8rem;
+      color: var(--primary-color);
+      font-weight: 700;
+    }
+
+    .lang-toggle {
+      display: flex;
+      gap: 0.5rem;
+      background: var(--bg-white);
+      padding: 0.4rem;
+      border-radius: 30px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+
+    html[dir="rtl"] .lang-toggle {
+      flex-direction: row-reverse;
+    }
+
+    .lang-btn {
+      background: transparent;
+      border: 2px solid transparent;
+      padding: 0.5rem 1.2rem;
+      font-size: 0.9rem;
+      font-weight: 600;
+      border-radius: 25px;
+      cursor: pointer;
+      color: var(--text-muted);
+      transition: var(--transition);
+    }
+
+    .lang-btn:hover {
+      background: var(--bg-light);
+    }
+
+    .lang-btn:focus {
+      outline: 3px solid var(--focus-color);
+      outline-offset: 2px;
+    }
+
+    .lang-btn.active {
+      background: var(--accent-color);
+      color: white;
+    }
+
+    /* Main Layout */
+    .main-layout {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr;
+      gap: 2rem;
+      align-items: start;
+    }
+
+    @media (max-width: 1200px) {
+      .main-layout {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Panels */
+    .panel {
+      background: var(--bg-white);
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+      padding: 2rem;
+      overflow-y: auto;
+    }
+
+    .left-panel {
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .right-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    /* Form Sections */
+    .form-section {
+      margin-bottom: 2.5rem;
+    }
+
+    .form-section:last-child {
+      margin-bottom: 0;
+    }
+
+    .section-title {
+      font-size: 1rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--primary-color);
+      margin-bottom: 1.2rem;
+      padding-bottom: 0.8rem;
+      border-bottom: 2px solid var(--accent-color);
+    }
+
+    /* Form Fields */
+    .field-group {
+      margin-bottom: 1.2rem;
+    }
+
+    .field-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    html[dir="rtl"] .field-row {
+      direction: rtl;
+    }
+
+    html[dir="ltr"] .field-row {
+      direction: ltr;
+    }
+
+    .field-row.full {
+      grid-template-columns: 1fr;
+    }
+
+    label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--primary-color);
+      margin-bottom: 0.4rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    input[type="text"],
+    input[type="email"],
+    input[type="tel"],
+    input[type="url"],
+    textarea {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      border: 2px solid var(--border-color);
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 1rem;
+      background: var(--bg-white);
+      transition: var(--transition);
+      color: var(--text-dark);
+    }
+
+    html[dir="rtl"] input[type="text"],
+    html[dir="rtl"] input[type="email"],
+    html[dir="rtl"] input[type="tel"],
+    html[dir="rtl"] input[type="url"],
+    html[dir="rtl"] textarea {
+      text-align: right;
+    }
+
+    html[dir="ltr"] input[type="text"],
+    html[dir="ltr"] input[type="email"],
+    html[dir="ltr"] input[type="tel"],
+    html[dir="ltr"] input[type="url"],
+    html[dir="ltr"] textarea {
+      text-align: left;
+    }
+
+    input[type="text"]:focus,
+    input[type="email"]:focus,
+    input[type="tel"]:focus,
+    input[type="url"]:focus,
+    textarea:focus {
+      outline: none;
+      border-color: var(--accent-color);
+      box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+
+    /* Experience Item */
+    .experience-item {
+      background: var(--bg-light);
+      padding: 1.2rem;
+      border-radius: 10px;
+      margin-bottom: 1.2rem;
+      border-left: 4px solid var(--accent-color);
+      position: relative;
+    }
+
+    html[dir="rtl"] .experience-item {
+      border-left: none;
+      border-right: 4px solid var(--accent-color);
+    }
+
+    .experience-item-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.8rem;
+    }
+
+    html[dir="rtl"] .experience-item-header {
+      flex-direction: row-reverse;
+    }
+
+    .exp-count {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      background: var(--bg-white);
+      padding: 0.3rem 0.8rem;
+      border-radius: 20px;
+    }
+
+    .remove-exp {
+      background: transparent;
+      border: 2px solid var(--danger-color);
+      color: var(--danger-color);
+      padding: 0.4rem 0.8rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .remove-exp:hover {
+      background: rgba(231, 76, 60, 0.1);
+    }
+
+    .remove-exp:focus {
+      outline: 3px solid var(--focus-color);
+      outline-offset: 2px;
+    }
+
+    /* Buttons */
+    .btn {
+      background: var(--accent-color);
+      color: white;
+      border: none;
+      padding: 0.75rem 1.5rem;
+      font-size: 0.95rem;
+      font-weight: 600;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: var(--transition);
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    html[dir="rtl"] .btn {
+      flex-direction: row-reverse;
+    }
+
+    .btn:hover {
+      background: #2980b9;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+    }
+
+    .btn:focus {
+      outline: 3px solid var(--focus-color);
+      outline-offset: 2px;
+    }
+
+    .btn.secondary {
+      background: transparent;
+      color: var(--accent-color);
+      border: 2px solid var(--accent-color);
+    }
+
+    .btn.secondary:hover {
+      background: rgba(52, 152, 219, 0.1);
+    }
+
+    .btn.small {
+      padding: 0.5rem 1rem;
+      font-size: 0.85rem;
+    }
+
+    .form-actions {
+      display: flex;
+      gap: 1rem;
+      margin-top: 2rem;
+      flex-wrap: wrap;
+    }
+
+    html[dir="rtl"] .form-actions {
+      flex-direction: row-reverse;
+    }
+
+    /* Preview */
+    .preview-toolbar {
+      display: flex;
+      gap: 0.8rem;
+      justify-content: flex-end;
+      flex-wrap: wrap;
+    }
+
+    html[dir="rtl"] .preview-toolbar {
+      justify-content: flex-start;
+      flex-direction: row-reverse;
+    }
+
+    .resume-preview {
+      background: var(--bg-white);
+      padding: 2.5rem;
+      border-radius: 12px;
+      box-shadow: 0 6px 24px rgba(0, 0, 0, 0.1);
+      font-size: 0.95rem;
+      line-height: 1.7;
+      color: var(--text-dark);
+      min-height: 600px;
+      border: 1px solid var(--border-color);
+      max-width: 800px;
+      width: 100%;
+      margin: 0 auto;
+      page-break-after: always;
+    }
+
+    @media print {
+      html {
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        background: white;
+        margin: 0;
+        padding: 0;
+      }
+
+      .app-container,
+      .header,
+      .lang-toggle,
+      .left-panel,
+      .form-actions,
+      .preview-toolbar,
+      .app-footer {
+        display: none !important;
+      }
+
+      .resume-preview .developer-footer {
+        display: none !important;
+        visibility: hidden !important;
+      }
+
+      .panel.left-panel {
+        display: none !important;
+      }
+
+      .panel.right-panel {
+        display: block !important;
+        background: transparent !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+      }
+
+      .main-layout {
+        display: block;
+        max-width: 100%;
+        margin: 0;
+        padding: 0;
+      }
+
+      .resume-preview {
+        box-shadow: none;
+        border: none;
+        max-width: 100%;
+        background: white;
+        margin: 0;
+        padding: 2rem 1.5rem;
+        page-break-after: auto;
+      }
+
+      .resume-preview section {
+        page-break-inside: avoid;
+        margin-bottom: 1rem;
+      }
+
+      .experience-block,
+      .resume-preview h2,
+      .resume-preview h3 {
+        page-break-inside: avoid;
+      }
+
+      .resume-preview > div[dir] {
+        display: none !important;
+        visibility: hidden !important;
+      }
+
+      .resume-preview .developer-footer {
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+      }
+
+      .resume-preview .developer-footer p {
+        display: none !important;
+        visibility: hidden !important;
+      }
+
+      .resume-preview > div > p {
+        visibility: visible !important;
+      }
+    }
+
+    .resume-preview h1 {
+      font-size: 2.2rem;
+      font-weight: 700;
+      margin: 0 0 0.3rem 0;
+      color: var(--primary-color);
+    }
+
+    .resume-preview h2 {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--primary-color);
+      margin: 1.5rem 0 0.8rem 0;
+      border-bottom: 2px solid var(--accent-color);
+      padding-bottom: 0.4rem;
+    }
+
+    .resume-preview h3 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin: 0.8rem 0 0.3rem 0;
+      color: var(--text-dark);
+    }
+
+    .preview-header {
+      margin-bottom: 1.5rem;
+      text-align: center;
+    }
+
+    .job-title-header {
+      font-size: 1.2rem;
+      color: var(--accent-color);
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+
+    .contact-line {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 1rem;
+      margin: 0.8rem 0;
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+
+    html[dir="rtl"] .contact-line {
+      flex-direction: row-reverse;
+    }
+
+    .contact-item {
+      display: flex;
+      gap: 0.3rem;
+    }
+
+    html[dir="rtl"] .contact-item {
+      flex-direction: row-reverse;
+    }
+
+    .experience-block {
+      margin-bottom: 1rem;
+    }
+
+    .exp-header {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      font-weight: 600;
+    }
+
+    html[dir="rtl"] .exp-header {
+      flex-direction: row-reverse;
+    }
+
+    .exp-title {
+      color: var(--primary-color);
+    }
+
+    .exp-company {
+      color: var(--text-muted);
+    }
+
+    .exp-date {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
+    .exp-desc {
+      margin-top: 0.5rem;
+      color: var(--text-dark);
+      line-height: 1.6;
+    }
+
+    .skills-list,
+    .certs-list,
+    .lang-list {
+      color: var(--text-dark);
+    }
+
+    /* Footer */
+    .app-footer {
+      text-align: center;
+      padding: 2rem 1.5rem;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      border-top: 1px solid var(--border-color);
+      margin-top: 3rem;
+    }
+
+    html[dir="rtl"] .app-footer {
+      text-align: center;
+    }
+
+    .app-footer p {
+      margin: 0.5rem 0;
+    }
+
+    /* Status Message */
+    .status-message {
+      padding: 0.8rem 1rem;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+      font-size: 0.9rem;
+      display: none;
+    }
+
+    .status-message.show {
+      display: block;
+    }
+
+    .status-message.success {
+      background: rgba(39, 174, 96, 0.1);
+      color: var(--success-color);
+      border-left: 4px solid var(--success-color);
+    }
+
+
+
+    
+    @media (max-width: 768px) {
+      .header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .field-row {
+        grid-template-columns: 1fr;
+      }
+
+      .main-layout {
+        gap: 1rem;
+      }
+
+      .panel {
+        padding: 1.2rem;
+      }
+
+      .form-section {
+        margin-bottom: 1.5rem;
+      }
+
+      .resume-preview {
+        padding: 1.5rem;
+        font-size: 0.9rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Skip to Main Content -->
+  <a href="#main-content" class="skip-link">Skip to main content</a>
+
+  <div class="app-container">
+    <!-- Header -->
+    <header class="header" role="banner">
+      <h1>Resume Builder</h1>
+      <nav class="lang-toggle" aria-label="Language selection">
+        <button class="lang-btn active" data-lang="en" aria-pressed="true" aria-label="Select English">
+          English
+        </button>
+        <button class="lang-btn" data-lang="ar" aria-pressed="false" aria-label="اختر العربية">
+          العربية
+        </button>
+      </nav>
+    </header>
+
+    <main class="main-layout" id="main-content">
+      <!-- Left Panel: Form -->
+      <section class="panel left-panel" aria-label="Resume form">
+        <form id="resume-form" role="form" aria-label="Resume information form">
+          <!-- Personal Information -->
+          <section class="form-section">
+            <h2 class="section-title" data-i18n="contactTitle">Contact Information</h2>
+            
+            <div class="field-group">
+              <label for="full-name" data-i18n="nameLabel">Full Name</label>
+              <input 
+                type="text" 
+                id="full-name" 
+                placeholder="John Doe"
+                data-i18n-placeholder="namePlaceholder"
+                aria-required="true"
+              >
+            </div>
+
+            <div class="field-group">
+              <label for="job-title" data-i18n="jobTitleLabel">Job Title</label>
+              <input 
+                type="text" 
+                id="job-title"
+                placeholder="Senior Developer"
+                data-i18n-placeholder="jobTitlePlaceholder"
+              >
+            </div>
+
+            <div class="field-row">
+              <div class="field-group">
+                <label for="phone" data-i18n="phoneLabel">Phone</label>
+                <input 
+                  type="tel" 
+                  id="phone"
+                  placeholder="+1 (555) 123-4567"
+                  data-i18n-placeholder="phonePlaceholder"
+                  aria-describedby="phone-format"
+                >
+                <small id="phone-format" style="color: var(--text-muted); font-size: 0.8rem;">
+                  <span data-i18n="optional">Optional</span>
+                </small>
+              </div>
+
+              <div class="field-group">
+                <label for="email" data-i18n="emailLabel">Email</label>
+                <input 
+                  type="email" 
+                  id="email"
+                  placeholder="john@example.com"
+                  data-i18n-placeholder="emailPlaceholder"
+                >
+              </div>
+            </div>
+
+            <div class="field-row">
+              <div class="field-group">
+                <label for="location" data-i18n="locationLabel">Location</label>
+                <input 
+                  type="text" 
+                  id="location"
+                  placeholder="New York, USA"
+                  data-i18n-placeholder="locationPlaceholder"
+                >
+              </div>
+
+              <div class="field-group">
+                <label for="linkedin" data-i18n="linkedinLabel">LinkedIn</label>
+                <input 
+                  type="url" 
+                  id="linkedin"
+                  placeholder="linkedin.com/in/johndoe"
+                  data-i18n-placeholder="linkedinPlaceholder"
+                >
+              </div>
+            </div>
+          </section>
+
+          <!-- Work Experience -->
+          <section class="form-section">
+            <h2 class="section-title" data-i18n="experienceTitle">Work Experience</h2>
+            <div id="experience-list" role="region" aria-label="Work experience items" aria-live="polite">
+              <!-- Experience items will be added here -->
+            </div>
+            <button 
+              type="button" 
+              id="add-experience" 
+              class="btn secondary"
+              data-i18n="addExperience"
+            >
+              + Add Experience
+            </button>
+          </section>
+
+          <!-- Professional Summary -->
+          <section class="form-section">
+            <h2 class="section-title" data-i18n="summaryTitle">Professional Summary</h2>
+            <div class="field-group">
+              <label for="summary" data-i18n="summaryLabel">Summary</label>
+              <textarea 
+                id="summary"
+                placeholder="Brief overview of your professional background..."
+                data-i18n-placeholder="summaryPlaceholder"
+                aria-describedby="summary-help"
+              ></textarea>
+              <small id="summary-help" style="color: var(--text-muted); font-size: 0.8rem;">
+                <span data-i18n="summaryHelp">2-3 sentences about your professional background and goals</span>
+              </small>
+            </div>
+          </section>
+
+          <!-- Education -->
+          <section class="form-section">
+            <h2 class="section-title" data-i18n="educationTitle">Education</h2>
+            
+            <div class="field-group">
+              <label for="degree" data-i18n="degreeLabel">Degree</label>
+              <input 
+                type="text" 
+                id="degree"
+                placeholder="Bachelor of Science"
+                data-i18n-placeholder="degreePlaceholder"
+              >
+            </div>
+
+            <div class="field-group">
+              <label for="university" data-i18n="universityLabel">University</label>
+              <input 
+                type="text" 
+                id="university"
+                placeholder="University Name"
+                data-i18n-placeholder="universityPlaceholder"
+              >
+            </div>
+
+            <div class="field-group">
+              <label for="grad-year" data-i18n="gradYearLabel">Graduation Year</label>
+              <input 
+                type="text" 
+                id="grad-year"
+                placeholder="2020"
+                data-i18n-placeholder="gradYearPlaceholder"
+              >
+            </div>
+          </section>
+
+          <!-- Skills -->
+          <section class="form-section">
+            <h2 class="section-title" data-i18n="skillsTitle">Skills</h2>
+            <div class="field-group">
+              <label for="skills" data-i18n="skillsLabel">Skills</label>
+              <textarea 
+                id="skills"
+                placeholder="JavaScript, React, Node.js"
+                data-i18n-placeholder="skillsPlaceholder"
+                aria-describedby="skills-help"
+              ></textarea>
+              <small id="skills-help" style="color: var(--text-muted); font-size: 0.8rem;">
+                <span data-i18n="skillsHelp">Separate skills with commas</span>
+              </small>
+            </div>
+          </section>
+
+          <!-- Certifications -->
+          <section class="form-section">
+            <h2 class="section-title" data-i18n="certsTitle">Certifications <span style="font-size: 0.8rem;">(<span data-i18n="optional">Optional</span>)</span></h2>
+            <div class="field-group">
+              <label for="certifications" data-i18n="certsLabel">Certifications</label>
+              <textarea 
+                id="certifications"
+                placeholder="AWS Certified, PMP"
+                data-i18n-placeholder="certsPlaceholder"
+                aria-describedby="certs-help"
+              ></textarea>
+              <small id="certs-help" style="color: var(--text-muted); font-size: 0.8rem;">
+                <span data-i18n="certsHelp">Separate certifications with commas</span>
+              </small>
+            </div>
+          </section>
+
+          <!-- Languages -->
+          <section class="form-section">
+            <h2 class="section-title" data-i18n="languagesTitle">Languages</h2>
+            <div class="field-group">
+              <label for="languages" data-i18n="languagesLabel">Languages</label>
+              <textarea 
+                id="languages"
+                placeholder="English (Native), Spanish (Fluent)"
+                data-i18n-placeholder="languagesPlaceholder"
+                aria-describedby="languages-help"
+              ></textarea>
+              <small id="languages-help" style="color: var(--text-muted); font-size: 0.8rem;">
+                <span data-i18n="languagesHelp">Separate languages with commas and proficiency levels</span>
+              </small>
+            </div>
+          </section>
+
+          <!-- Form Actions -->
+          <div class="form-actions">
+            <button 
+              type="button" 
+              id="clear-form" 
+              class="btn secondary"
+              data-i18n="clearForm"
+            >
+              Clear Form
+            </button>
+          </div>
+        </form>
+      </section>
+
+      <!-- Right Panel: Preview -->
+      <section class="panel right-panel" aria-label="Resume preview">
+        <div class="preview-toolbar">
+          <button 
+            id="download-pdf" 
+            class="btn"
+            data-i18n="downloadPDF"
+            aria-label="Download resume as PDF"
+          >
+            ⬇ PDF
+          </button>
+          <button 
+            id="print-resume" 
+            class="btn"
+            data-i18n="printResume"
+            aria-label="Print resume"
+          >
+            🖨 Print
+          </button>
+        </div>
+        
+        <div id="resume-preview" class="resume-preview" role="document" aria-label="Resume preview"></div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Footer -->
+  <footer class="app-footer" role="contentinfo">
+    <p>
+      <strong>Resume Builder</strong> — Developed by <strong>Abdullah Ahmed</strong> | تم تطويره بواسطة <strong>عبدالله أحمد</strong>
+    </p>
+  </footer>
+
+  <!-- Experience Item Template -->
+  <template id="exp-template">
+    <div class="experience-item">
+      <div class="experience-item-header">
+        <span class="exp-count" aria-hidden="true">Position</span>
+        <button 
+          type="button" 
+          class="remove-exp btn small"
+          data-i18n="removeExp"
+        >
+          ✕ Remove
+        </button>
+      </div>
+
+      <div class="field-group">
+        <label class="exp-job-title-label" data-i18n="expJobTitle">Job Title</label>
+        <input 
+          type="text" 
+          class="exp-job-title"
+          placeholder="Human Resources Specialist"
+          data-i18n-placeholder="expJobPlaceholder"
+        >
+      </div>
+
+      <div class="field-group">
+        <label class="exp-company-label" data-i18n="expCompany">Company</label>
+        <input 
+          type="text" 
+          class="exp-company"
+          placeholder="Company Name"
+          data-i18n-placeholder="expCompanyPlaceholder"
+        >
+      </div>
+
+      <div class="field-row">
+        <div class="field-group">
+          <label class="exp-start-label" data-i18n="expStart">Start Date</label>
+          <input 
+            type="text" 
+            class="exp-start-date"
+            placeholder="MM/YYYY"
+            data-i18n-placeholder="expStartPlaceholder"
+          >
+        </div>
+
+        <div class="field-group">
+          <label class="exp-end-label" data-i18n="expEnd">End Date</label>
+          <input 
+            type="text" 
+            class="exp-end-date"
+            placeholder="MM/YYYY or Present"
+            data-i18n-placeholder="expEndPlaceholder"
+          >
+        </div>
+      </div>
+
+      <div class="field-group">
+        <label class="exp-desc-label" data-i18n="expDesc">Description</label>
+        <textarea 
+          class="exp-description"
+          placeholder="Key achievements and responsibilities..."
+          data-i18n-placeholder="expDescPlaceholder"
+        ></textarea>
+      </div>
+    </div>
+  </template>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Internationalization data
+      const i18n = {
+        en: {
+          // Contact
+          contactTitle: 'Contact Information',
+          nameLabel: 'Full Name',
+          namePlaceholder: 'Abdullah Ahmed',
+          jobTitleLabel: 'Job Title',
+          jobTitlePlaceholder: 'Human Resources Specialist',
+          phoneLabel: 'Phone',
+          phonePlaceholder: '+1 (555) 123-4567',
+          emailLabel: 'Email',
+          emailPlaceholder: 'abdullahahmed@example.com',
+          locationLabel: 'Location',
+          locationPlaceholder: 'New York, USA',
+          linkedinLabel: 'LinkedIn URL',
+          linkedinPlaceholder: 'linkedin.com/in/AbdullahAhmed',
+          
+          // Experience
+          experienceTitle: 'Work Experience',
+          expJobTitle: 'Job Title',
+          expJobPlaceholder: 'Human Resources Specialist',
+          expCompany: 'Company',
+          expCompanyPlaceholder: 'Company Name',
+          expStart: 'Start Date',
+          expStartPlaceholder: 'MM/YYYY',
+          expEnd: 'End Date',
+          expEndPlaceholder: 'MM/YYYY or Present',
+          expDesc: 'Description',
+          expDescPlaceholder: 'Key achievements and responsibilities...',
+          addExperience: '+ Add Experience',
+          removeExp: '✕ Remove',
+          
+          // Professional Summary
+          summaryTitle: 'Professional Summary',
+          summaryLabel: 'Professional Summary',
+          summaryPlaceholder: 'Brief overview of your professional experience...',
+          summaryHelp: '2-3 sentences about your professional experience and goals',
+          
+          // Education
+          educationTitle: 'Education',
+          degreeLabel: 'Degree',
+          degreePlaceholder: 'Bachelor of Human Resources',
+          universityLabel: 'University',
+          universityPlaceholder: 'University Name',
+          gradYearLabel: 'Graduation Year',
+          gradYearPlaceholder: '2020',
+          
+          // Skills
+          skillsTitle: 'Skills',
+          skillsLabel: 'Skills',
+          skillsPlaceholder: 'JavaScript, React, Node.js',
+          skillsHelp: 'Separate skills with commas',
+          
+          // Certifications
+          certsTitle: 'Certifications',
+          certsLabel: 'Certifications',
+          certsPlaceholder: 'AWS Certified, PMP',
+          certsHelp: 'Separate certifications with commas',
+          
+          // Languages
+          languagesTitle: 'Languages',
+          languagesLabel: 'Languages',
+          languagesPlaceholder: 'English (Native), Spanish (Fluent)',
+          languagesHelp: 'Separate languages with commas and proficiency levels',
+          
+          // Actions
+          clearForm: 'Clear Form',
+          downloadPDF: '⬇ PDF',
+          printResume: '🖨 Print',
+          optional: 'Optional',
+          
+          // Preview
+          previewSummary: 'Professional Summary',
+          previewExperience: 'Work Experience',
+          previewEducation: 'Education',
+          previewSkills: 'Skills',
+          previewCerts: 'Certifications',
+          previewLanguages: 'Languages',
+        },
+        ar: {
+          // Contact
+          contactTitle: 'معلومات الاتصال',
+          nameLabel: 'الاسم الكامل',
+          namePlaceholder: 'عبدالله أحمد',
+          jobTitleLabel: 'المسمى الوظيفي',
+          jobTitlePlaceholder: 'أخصائي موارد بشرية',
+          phoneLabel: 'الهاتف',
+          phonePlaceholder: '+966 50 123 4567',
+          emailLabel: 'البريد الإلكتروني',
+          emailPlaceholder: 'abdullahahmed@example.com',
+          locationLabel: 'الموقع',
+          locationPlaceholder: 'الرياض، السعودية',
+          linkedinLabel: 'رابط لينكد إن',
+          linkedinPlaceholder: 'linkedin.com/in/AbdullahAhmed',
+          
+          // Experience
+          experienceTitle: 'الخبرات العملية',
+          expJobTitle: 'المسمى الوظيفي',
+          expJobPlaceholder: 'أخصائي موارد بشرية',
+          expCompany: 'الشركة',
+          expCompanyPlaceholder: 'اسم الشركة',
+          expStart: 'تاريخ البدء',
+          expStartPlaceholder: 'شهر/سنة',
+          expEnd: 'تاريخ النهاية',
+          expEndPlaceholder: 'شهر/سنة أو حتى الآن',
+          expDesc: 'الوصف',
+          expDescPlaceholder: 'الإنجازات الرئيسية والمسؤوليات...',
+          addExperience: '+ إضافة خبرة',
+          removeExp: '✕ حذف',
+          
+          // Professional Summary
+          summaryTitle: 'الملخص المهني',
+          summaryLabel: 'الملخص المهني',
+          summaryPlaceholder: 'نظرة عامة موجزة عن خبرتك المهنية...',
+          summaryHelp: 'جملتان إلى ثلاث جمل عن خبرتك المهنية وأهدافك',
+          
+          // Education
+          educationTitle: 'التعليم',
+          degreeLabel: 'الشهادة',
+          degreePlaceholder: 'بكالوريوس موارد بشرية',
+          universityLabel: 'الجامعة',
+          universityPlaceholder: 'اسم الجامعة',
+          gradYearLabel: 'سنة التخرج',
+          gradYearPlaceholder: '٢٠٢٠',
+          
+          // Skills
+          skillsTitle: 'المهارات',
+          skillsLabel: 'المهارات',
+          skillsPlaceholder: 'جافاسكريبت، رياكت، نود.جي إس',
+          skillsHelp: 'افصل المهارات بفواصل',
+          
+          // Certifications
+          certsTitle: 'الشهادات',
+          certsLabel: 'الشهادات',
+          certsPlaceholder: 'AWS معتمد، PMP',
+          certsHelp: 'افصل الشهادات بفواصل',
+          
+          // Languages
+          languagesTitle: 'اللغات',
+          languagesLabel: 'اللغات',
+          languagesPlaceholder: 'العربية (أم)، إنجليزية (متقدم)',
+          languagesHelp: 'افصل اللغات بفواصل وحدد مستوى الكفاءة',
+          
+          // Actions
+          clearForm: 'مسح النموذج',
+          downloadPDF: '⬇ تحميل PDF',
+          printResume: '🖨 طباعة',
+          optional: 'اختياري',
+          
+          // Preview
+          previewSummary: 'الملخص المهني',
+          previewExperience: 'الخبرات العملية',
+          previewEducation: 'التعليم',
+          previewSkills: 'المهارات',
+          previewCerts: 'الشهادات',
+          previewLanguages: 'اللغات',
+        }
+      };
+
+      let currentLang = 'en';
+
+      // DOM Elements
+      const htmlEl = document.documentElement;
+      const previewDiv = document.getElementById('resume-preview');
+      const form = document.getElementById('resume-form');
+      const experienceList = document.getElementById('experience-list');
+      const addExpBtn = document.getElementById('add-experience');
+      const clearBtn = document.getElementById('clear-form');
+      const downloadBtn = document.getElementById('download-pdf');
+      const printBtn = document.getElementById('print-resume');
+      const langBtns = document.querySelectorAll('.lang-btn');
+      const expTemplate = document.getElementById('exp-template').content;
+
+      // Initialize
+      function initExperience() {
+        experienceList.innerHTML = '';
+        addExperienceItem();
+      }
+
+      function addExperienceItem() {
+        const clone = expTemplate.cloneNode(true);
+        experienceList.appendChild(clone);
+        
+        // Apply current language to new item labels and placeholders
+        const newItem = experienceList.lastElementChild;
+        newItem.querySelectorAll('[data-i18n]').forEach(el => {
+          const key = el.getAttribute('data-i18n');
+          if (i18n[currentLang][key]) el.textContent = i18n[currentLang][key];
+        });
+        
+        newItem.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+          const key = el.getAttribute('data-i18n-placeholder');
+          if (i18n[currentLang][key]) el.placeholder = i18n[currentLang][key];
+        });
+        
+        updatePreview();
+        
+        // Announce to screen readers
+        announceToScreenReader('Experience item added');
+      }
+
+      // Remove experience (event delegation)
+      experienceList.addEventListener('click', (e) => {
+        if (e.target.classList.contains('remove-exp') || e.target.closest('.remove-exp')) {
+          const item = e.target.closest('.experience-item');
+          if (item) {
+            item.remove();
+            updatePreview();
+            announceToScreenReader('Experience item removed');
+          }
+        }
+      });
+
+      // Live preview
+      form.addEventListener('input', updatePreview);
+      form.addEventListener('change', updatePreview);
+
+      function updatePreview() {
+        const data = collectFormData();
+        const html = generatePreviewHTML(data);
+        previewDiv.innerHTML = html;
+        previewDiv.setAttribute('dir', currentLang === 'ar' ? 'rtl' : 'ltr');
+      }
+
+      function collectFormData() {
+        const fullName = document.getElementById('full-name')?.value || '';
+        const jobTitle = document.getElementById('job-title')?.value || '';
+        const phone = document.getElementById('phone')?.value || '';
+        const email = document.getElementById('email')?.value || '';
+        const location = document.getElementById('location')?.value || '';
+        const linkedin = document.getElementById('linkedin')?.value || '';
+        const summary = document.getElementById('summary')?.value || '';
+        const degree = document.getElementById('degree')?.value || '';
+        const university = document.getElementById('university')?.value || '';
+        const gradYear = document.getElementById('grad-year')?.value || '';
+        const skills = document.getElementById('skills')?.value || '';
+        const certifications = document.getElementById('certifications')?.value || '';
+        const languages = document.getElementById('languages')?.value || '';
+
+        const expItems = [];
+        document.querySelectorAll('.experience-item').forEach(item => {
+          expItems.push({
+            title: item.querySelector('.exp-job-title')?.value || '',
+            company: item.querySelector('.exp-company')?.value || '',
+            start: item.querySelector('.exp-start-date')?.value || '',
+            end: item.querySelector('.exp-end-date')?.value || '',
+            desc: item.querySelector('.exp-description')?.value || ''
+          });
+        });
+
+        return { fullName, jobTitle, phone, email, location, linkedin, summary, degree, university, gradYear, skills, certifications, languages, expItems };
+      }
+
+      function generatePreviewHTML(d) {
+        const t = i18n[currentLang];
+
+        const contactItems = [];
+        if (d.phone) contactItems.push(`<span class="contact-item"><strong>${d.phone}</strong></span>`);
+        if (d.email) contactItems.push(`<span class="contact-item"><strong>${d.email}</strong></span>`);
+        if (d.location) contactItems.push(`<span class="contact-item"><strong>${d.location}</strong></span>`);
+        if (d.linkedin) contactItems.push(`<span class="contact-item"><strong>${d.linkedin}</strong></span>`);
+
+        const skillsArray = d.skills.split(',').map(s => s.trim()).filter(s => s);
+        const certsArray = d.certifications.split(',').map(s => s.trim()).filter(s => s);
+        const langArray = d.languages.split(',').map(s => s.trim()).filter(s => s);
+
+        let html = `
+          <div class="preview-header">
+            <h1>${d.fullName || (currentLang === 'ar' ? 'الاسم الكامل' : 'Full Name')}</h1>
+            ${d.jobTitle ? `<div class="job-title-header">${d.jobTitle}</div>` : ''}
+            ${contactItems.length ? `<div class="contact-line">${contactItems.join('')}</div>` : ''}
+          </div>
+        `;
+
+        if (d.expItems.some(e => e.title || e.company || e.desc)) {
+          html += `<section><h2>${t.previewExperience}</h2>`;
+          d.expItems.forEach(exp => {
+            if (!exp.title && !exp.company && !exp.desc) return;
+            html += `<div class="experience-block"><div class="exp-header">
+              <h3>${exp.title || '—'}</h3>
+              ${exp.company ? `<span class="exp-company">${exp.company}</span>` : ''}
+              ${(exp.start || exp.end) ? `<span class="exp-date">${exp.start}${exp.start && exp.end ? ' – ' : ''}${exp.end}</span>` : ''}
+            </div>`;
+            if (exp.desc) html += `<p class="exp-desc">${exp.desc.replace(/\n/g, '<br>')}</p>`;
+            html += `</div>`;
+          });
+          html += `</section>`;
+        }
+
+        if (d.summary) {
+          html += `<section><h2>${t.previewSummary}</h2><p>${d.summary.replace(/\n/g, '<br>')}</p></section>`;
+        }
+
+        if (d.degree || d.university || d.gradYear) {
+          html += `<section><h2>${t.previewEducation}</h2><p><strong>${d.degree || '—'}</strong>${d.university ? ', ' + d.university : ''}${d.gradYear ? ' · ' + d.gradYear : ''}</p></section>`;
+        }
+
+        if (skillsArray.length) {
+          html += `<section><h2>${t.previewSkills}</h2><p class="skills-list">${skillsArray.join(', ')}</p></section>`;
+        }
+
+        if (certsArray.length) {
+          html += `<section><h2>${t.previewCerts}</h2><p class="certs-list">${certsArray.join(', ')}</p></section>`;
+        }
+
+        if (langArray.length) {
+          html += `<section><h2>${t.previewLanguages}</h2><p class="lang-list">${langArray.join(', ')}</p></section>`;
+        }
+
+        return html;
+      }
+
+      // Language Switching
+      function setLanguage(lang) {
+        currentLang = lang;
+        const dir = lang === 'ar' ? 'rtl' : 'ltr';
+        htmlEl.setAttribute('lang', lang);
+        htmlEl.setAttribute('dir', dir);
+
+        document.querySelectorAll('[data-i18n]').forEach(el => {
+          const key = el.getAttribute('data-i18n');
+          if (i18n[lang][key]) el.textContent = i18n[lang][key];
+        });
+
+        document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+          const key = el.getAttribute('data-i18n-placeholder');
+          if (i18n[lang][key]) el.placeholder = i18n[lang][key];
+        });
+
+        // Update language button states
+        langBtns.forEach(btn => {
+          const btnLang = btn.getAttribute('data-lang');
+          btn.classList.toggle('active', btnLang === lang);
+          btn.setAttribute('aria-pressed', btnLang === lang);
+        });
+
+        updatePreview();
+        announceToScreenReader(lang === 'ar' ? 'تم التبديل إلى العربية' : 'Switched to English');
+      }
+
+      langBtns.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const lang = e.target.getAttribute('data-lang');
+          setLanguage(lang);
+        });
+      });
+
+      // Clear Form
+      function clearForm() {
+        if (confirm(i18n[currentLang].clearForm === 'مسح النموذج' ? 
+          'هل تريد مسح جميع البيانات؟' : 
+          'Are you sure you want to clear all data?')) {
+          form.reset();
+          experienceList.innerHTML = '';
+          addExperienceItem();
+          updatePreview();
+          announceToScreenReader('Form cleared');
+        }
+      }
+      clearBtn.addEventListener('click', clearForm);
+
+      // Add Experience
+      addExpBtn.addEventListener('click', addExperienceItem);
+
+      // PDF Export
+      downloadBtn.addEventListener('click', function() {
+        const element = previewDiv;
+        const opt = {
+          margin: [0.5, 0.5, 0.5, 0.5],
+          filename: 'resume.pdf',
+          image: { type: 'jpeg', quality: 1 },
+          html2canvas: { scale: 2, letterRendering: true },
+          jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+        };
+        html2pdf().set(opt).from(element).save();
+        announceToScreenReader('PDF download started');
+      });
+
+      // Print
+      printBtn.addEventListener('click', function() {
+        window.print();
+      });
+
+      // Screen Reader Announcements
+      function announceToScreenReader(message) {
+        const announcement = document.createElement('div');
+        announcement.setAttribute('role', 'status');
+        announcement.setAttribute('aria-live', 'polite');
+        announcement.setAttribute('aria-atomic', 'true');
+        announcement.style.position = 'absolute';
+        announcement.style.left = '-10000px';
+        announcement.textContent = message;
+        document.body.appendChild(announcement);
+        setTimeout(() => announcement.remove(), 1000);
+      }
+
+      // Initialize
+      initExperience();
+      setLanguage('en');
+      updatePreview();
+    });
+  </script>
+</body>
+</html>
