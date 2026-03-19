@@ -418,18 +418,17 @@
 
     .resume-preview {
       background: var(--bg-white);
-      padding: 2.5rem;
+      padding: 1.5rem 2rem;
       border-radius: 12px;
       box-shadow: 0 6px 24px rgba(0, 0, 0, 0.1);
-      font-size: 0.95rem;
-      line-height: 1.7;
+      font-size: 0.9rem;
+      line-height: 1.5;
       color: var(--text-dark);
-      min-height: 600px;
+      min-height: auto;
       border: 1px solid var(--border-color);
       max-width: 800px;
       width: 100%;
       margin: 0 auto;
-      page-break-after: always;
     }
 
     @media print {
@@ -483,13 +482,55 @@
         max-width: 100%;
         background: white;
         margin: 0;
-        padding: 2rem 1.5rem;
+        padding: 0.5rem 0.8rem;
         page-break-after: auto;
+        font-size: 0.9rem;
+        line-height: 1.4;
       }
 
       .resume-preview section {
         page-break-inside: avoid;
-        margin-bottom: 1rem;
+        margin-bottom: 0.4rem;
+      }
+
+      .resume-preview h1 {
+        font-size: 1.4rem;
+        margin: 0 0 0.15rem 0;
+      }
+
+      .resume-preview h2 {
+        font-size: 0.95rem;
+        margin: 0.5rem 0 0.3rem 0;
+        padding-bottom: 0.2rem;
+      }
+
+      .resume-preview h3 {
+        font-size: 0.85rem;
+        margin: 0.3rem 0 0.1rem 0;
+      }
+
+      .preview-header {
+        margin-bottom: 0.3rem;
+      }
+
+      .job-title-header {
+        font-size: 0.9rem;
+        margin-bottom: 0.15rem;
+      }
+
+      .contact-line {
+        gap: 0.5rem;
+        margin: 0.2rem 0;
+        font-size: 0.75rem;
+      }
+
+      .experience-block {
+        margin-bottom: 0.3rem;
+      }
+
+      .exp-desc {
+        margin-top: 0.2rem;
+        line-height: 1.3;
       }
 
       .experience-block,
@@ -516,51 +557,65 @@
 
       .resume-preview > div > p {
         visibility: visible !important;
+        margin: 0.2rem 0;
+        line-height: 1.3;
+      }
+
+      .resume-preview section > p,
+      .resume-preview section > div {
+        margin: 0.1rem 0;
+      }
+
+      .skills-list,
+      .certs-list,
+      .lang-list {
+        margin: 0;
+        line-height: 1.3;
       }
     }
 
     .resume-preview h1 {
-      font-size: 2.2rem;
+      font-size: 1.8rem;
       font-weight: 700;
-      margin: 0 0 0.3rem 0;
+      margin: 0 0 0.2rem 0;
       color: var(--primary-color);
     }
 
     .resume-preview h2 {
-      font-size: 1.3rem;
+      font-size: 1.1rem;
       font-weight: 700;
       color: var(--primary-color);
-      margin: 1.5rem 0 0.8rem 0;
+      margin: 0.9rem 0 0.5rem 0;
       border-bottom: 2px solid var(--accent-color);
-      padding-bottom: 0.4rem;
+      padding-bottom: 0.3rem;
     }
 
     .resume-preview h3 {
-      font-size: 1.1rem;
+      font-size: 0.95rem;
       font-weight: 700;
-      margin: 0.8rem 0 0.3rem 0;
+      margin: 0.5rem 0 0.2rem 0;
       color: var(--text-dark);
     }
 
     .preview-header {
-      margin-bottom: 1.5rem;
+      margin-bottom: 0.8rem;
       text-align: center;
     }
 
     .job-title-header {
-      font-size: 1.2rem;
+      font-size: 1rem;
       color: var(--accent-color);
       font-weight: 600;
-      margin-bottom: 0.5rem;
+      margin-bottom: 0.3rem;
     }
 
     .contact-line {
       display: flex;
       flex-wrap: wrap;
       justify-content: center;
-      gap: 1rem;
-      margin: 0.8rem 0;
-      font-size: 0.9rem;
+      gap: 0.8rem;
+      margin: 0.4rem 0;
+      font-size: 0.8rem;
       color: var(--text-muted);
     }
 
@@ -578,7 +633,7 @@
     }
 
     .experience-block {
-      margin-bottom: 1rem;
+      margin-bottom: 0.6rem;
     }
 
     .exp-header {
@@ -602,13 +657,13 @@
 
     .exp-date {
       color: var(--text-muted);
-      font-size: 0.9rem;
+      font-size: 0.8rem;
     }
 
     .exp-desc {
-      margin-top: 0.5rem;
+      margin-top: 0.2rem;
       color: var(--text-dark);
-      line-height: 1.6;
+      line-height: 1.4;
     }
 
     .skills-list,
